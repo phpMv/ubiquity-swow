@@ -1,2 +1,2 @@
-# ubiquity-snow
-Ubiquity Snow http server
+# ubiquity-swow
+Ubiquity Swow http server
