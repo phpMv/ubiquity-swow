@@ -1,0 +1,34 @@
+{
+	"name" : "phpmv/ubiquity-swow",
+	"description" : "Swow extension for Ubiquity framework",
+	"type" : "extension",
+	"keywords" : [
+		"php",
+		"framework",
+		"mvc",
+		"orm",
+		"server",
+		"swow"
+	],
+	"require" : {
+		"php" : ">=7.4",
+		"swow/swow": "^1.5"
+	},
+	"license" : "Apache-2.0",
+	"authors" : [{
+			"name" : "Jean-Christophe HERON",
+			"email" : "myaddressmail@gmail.com",
+			"role" : "Lead developer"
+		}
+	],
+	"autoload" : {
+		"psr-4" : {
+			"Ubiquity\\" : "src/Ubiquity/"
+		}
+	},
+	"extra" : {
+		"branch-alias" : {
+			"dev-master" : "1.0.x-dev"
+		}
+	}
+}
