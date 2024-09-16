@@ -68,6 +68,7 @@ class SwowServer {
         $uri = $request->getUri();
         $_SERVER['REQUEST_URI'] = $uri->getPath();
         $_SERVER['QUERY_STRING'] = $uri->getQuery();
+        \parse_str($_SERVER['QUERY_STRING'], $_GET);
 
         // Server protocol
         $_SERVER['SERVER_PROTOCOL'] = 'HTTP/' . $request->getProtocolVersion();
@@ -99,6 +100,20 @@ class SwowServer {
         if ($request->hasHeader('content-length')) {
             $_SERVER['CONTENT_LENGTH'] = $request->getHeader('content-length')[0];
         }
+        // Handle $_POST if the request method is POST
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+            if (\stripos($contentType, 'application/x-www-form-urlencoded') !== false || \stripos($contentType, 'multipart/form-data') !== false) {
+                \parse_str($request->getBody()->getContents(), $_POST);
+            } elseif (\stripos($contentType, 'application/json') !== false) {
+                $_POST = \json_decode($request->getBody()->getContents(), true) ?? [];
+            }
+        } else {
+            $_POST = [];
+        }
+
+        // Merge $_GET and $_POST into $_REQUEST
+        $_REQUEST = array_merge($_GET, $_POST);
     }
 
 
