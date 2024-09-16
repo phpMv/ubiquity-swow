@@ -58,7 +58,7 @@ class SwowServer {
         $this->options = $options;
     }
 
-    protected function populateServerArray(Request $request,$connexion) {
+    protected function populateServerArray(Request $request) {
         $_SERVER = []; // Clear the existing $_SERVER array
 
         // Request method
