@@ -29,6 +29,8 @@ class SwowServer {
     private $basedir;
     private $options;
 
+    private $httpInstance;
+
     public function __construct() {
         $this->server = new Server();
     }
@@ -98,7 +100,8 @@ class SwowServer {
     }
 
     public function handle(Request $request, Response $response) {
-        \Ubiquity\controllers\Startup::setHttpInstance( new SwowHttp($response,$request));
+        $this->httpInstance = new SwowHttp($response, $request);
+        \Ubiquity\controllers\Startup::setHttpInstance( $this->httpInstance);
         $response->setHeader('Date', \gmdate('D, d M Y H:i:s') . ' GMT');
         $_GET['c'] = '';
         $uriInfos = \Ubiquity\utils\http\URequest::parseURI($request->getUri(), $this->basedir);
