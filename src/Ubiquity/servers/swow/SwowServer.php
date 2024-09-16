@@ -58,7 +58,7 @@ class SwowServer {
         $this->options = $options;
     }
 
-    protected function populateServerArray(Request $request) {
+    protected function populateServerArray(Request $request,$connexion) {
         $_SERVER = []; // Clear the existing $_SERVER array
 
         // Request method
@@ -87,11 +87,6 @@ class SwowServer {
         $_SERVER['SERVER_NAME'] = $request->getHeader('host')[0] ?? 'localhost';
         $_SERVER['SERVER_PORT'] = $request->getUri()->getPort() ?? 80;
 
-        // Remote Address
-        $client = $request->getClient();
-        $_SERVER['REMOTE_ADDR'] = $client->getAddress();
-        $_SERVER['REMOTE_PORT'] = $client->getPort();
-
         // Other necessary server variables
         $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'] = $uri->getPath();
         $_SERVER['REQUEST_TIME'] = time();
@@ -111,6 +106,8 @@ class SwowServer {
         $this->setOptions($options);
         $backlog = (int) ($options['SERVER_BACKLOG']??Socket::DEFAULT_BACKLOG);
         $this->server->bind($host, $port)->listen($backlog);
+        $_SERVER['REMOTE_ADDR'] = $host;
+        $_SERVER['REMOTE_PORT'] = $port;
         while (true) {
             try {
                 $connection = null;
