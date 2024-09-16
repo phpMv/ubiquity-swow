@@ -58,11 +58,8 @@ class SwowServer {
 
     public function run($host, $port, $options = []) {
         $this->setOptions($options);
-        $backlog = (int) ($options['SERVER_BACKLOG'] ?: Socket::DEFAULT_BACKLOG);
+        $backlog = (int) ($options['SERVER_BACKLOG']??Socket::DEFAULT_BACKLOG);
         $this->server->bind($host, $port)->listen($backlog);
-        if (!getenv('CI')) {
-            echo "Server started at http://{$host}:{$port}\n";
-        }
         while (true) {
             try {
                 $connection = null;
