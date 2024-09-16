@@ -59,7 +59,7 @@ class SwowServer {
     }
 
     protected function populateServerArray(Request $request) {
-        $_SERVER = []; // Clear the existing $_SERVER array
+        $_SERVER = ['REMOTE_ADDR'=>$_SERVER['REMOTE_ADDR'],'REMOTE_PORT'=>$_SERVER['REMOTE_PORT']]; // Clear the existing $_SERVER array
 
         // Request method
         $_SERVER['REQUEST_METHOD'] = $request->getMethod();
