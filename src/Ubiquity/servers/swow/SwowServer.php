@@ -104,6 +104,8 @@ class SwowServer {
         \Ubiquity\controllers\Startup::setHttpInstance( $this->httpInstance);
         $response->setHeader('Date', \gmdate('D, d M Y H:i:s') . ' GMT');
         $_GET['c'] = '';
+        $_SERVER['HTTP_HOST'] = $request->getHeaderLine('Host');
+        $_SERVER['REQUEST_METHOD'] = $request->getMethod();
         $uriInfos = \Ubiquity\utils\http\URequest::parseURI($request->getUri(), $this->basedir);
         $uri = $uriInfos['uri'];
 
