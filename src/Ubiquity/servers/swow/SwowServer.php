@@ -64,13 +64,14 @@ class SwowServer {
             try {
                 $connection = null;
                 $connection = $this->server->acceptConnection();
-                Coroutine::run(static function () use ($connection): void {
+                $self=$this;
+                Coroutine::run(static function () use ($connection,$self): void {
                     try {
                         while (true) {
                             $request = null;
                             try {
                                 $request = $connection->recvHttpRequest();
-                                $response = $this->handle($request, new Response());
+                                $response = $self->handle($request, new Response());
                                 $connection->sendHttpResponse($response);
                             } catch (ProtocolException $exception) {
                                 $connection->error($exception->getCode(), $exception->getMessage(), true);
@@ -96,7 +97,7 @@ class SwowServer {
         }
     }
 
-    protected function handle(Request $request, Response $response) {
+    public function handle(Request $request, Response $response) {
         \Ubiquity\controllers\Startup::setHttpInstance( new SwowHttp($response,$request));
         $response->setHeader('Date', \gmdate('D, d M Y H:i:s') . ' GMT');
         $_GET['c'] = '';
