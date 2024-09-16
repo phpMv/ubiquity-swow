@@ -84,7 +84,7 @@ class SwowServer {
         }
 
         // Host and Port
-        $_SERVER['SERVER_NAME'] = $request->getHeader('host')[0] ?? 'localhost';
+        $_SERVER['SERVER_NAME'] = $request->getHeader('host')[0] ?? '127.0.0.1';
         $_SERVER['SERVER_PORT'] = $request->getUri()->getPort() ?? 80;
 
         // Other necessary server variables
