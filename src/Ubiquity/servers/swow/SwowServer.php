@@ -58,6 +58,55 @@ class SwowServer {
         $this->options = $options;
     }
 
+    protected function populateServerArray(Request $request) {
+        $_SERVER = []; // Clear the existing $_SERVER array
+
+        // Request method
+        $_SERVER['REQUEST_METHOD'] = $request->getMethod();
+
+        // Request URI and Query String
+        $uri = $request->getUri();
+        $_SERVER['REQUEST_URI'] = $uri->getPath();
+        $_SERVER['QUERY_STRING'] = $uri->getQuery();
+
+        // Server protocol
+        $_SERVER['SERVER_PROTOCOL'] = 'HTTP/' . $request->getProtocolVersion();
+
+        // Headers
+        foreach ($request->getHeaders() as $header => $values) {
+            $headerName = 'HTTP_' . strtoupper(str_replace('-', '_', $header));
+            $_SERVER[$headerName] = implode(', ', $values);
+        }
+
+        // Handle HTTP_X_REQUESTED_WITH for AJAX requests
+        if ($request->hasHeader('x-requested-with')) {
+            $_SERVER['HTTP_X_REQUESTED_WITH'] = $request->getHeader('x-requested-with')[0];
+        }
+
+        // Host and Port
+        $_SERVER['SERVER_NAME'] = $request->getHeader('host')[0] ?? 'localhost';
+        $_SERVER['SERVER_PORT'] = $request->getUri()->getPort() ?? 80;
+
+        // Remote Address
+        $client = $request->getClient();
+        $_SERVER['REMOTE_ADDR'] = $client->getAddress();
+        $_SERVER['REMOTE_PORT'] = $client->getPort();
+
+        // Other necessary server variables
+        $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'] = $uri->getPath();
+        $_SERVER['REQUEST_TIME'] = time();
+        $_SERVER['REQUEST_TIME_FLOAT'] = microtime(true);
+
+        // Content-type and length (if present)
+        if ($request->hasHeader('content-type')) {
+            $_SERVER['CONTENT_TYPE'] = $request->getHeader('content-type')[0];
+        }
+        if ($request->hasHeader('content-length')) {
+            $_SERVER['CONTENT_LENGTH'] = $request->getHeader('content-length')[0];
+        }
+    }
+
+
     public function run($host, $port, $options = []) {
         $this->setOptions($options);
         $backlog = (int) ($options['SERVER_BACKLOG']??Socket::DEFAULT_BACKLOG);
@@ -104,8 +153,7 @@ class SwowServer {
         \Ubiquity\controllers\Startup::setHttpInstance( $this->httpInstance);
         $response->setHeader('Date', \gmdate('D, d M Y H:i:s') . ' GMT');
         $_GET['c'] = '';
-        $_SERVER['HTTP_HOST'] = $request->getHeaderLine('Host');
-        $_SERVER['REQUEST_METHOD'] = $request->getMethod();
+        $this->populateServerArray($request);
         $uriInfos = \Ubiquity\utils\http\URequest::parseURI($request->getUri(), $this->basedir);
         $uri = $uriInfos['uri'];
 
