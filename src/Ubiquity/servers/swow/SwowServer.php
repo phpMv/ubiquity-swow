@@ -103,7 +103,10 @@ class SwowServer {
         // Handle $_POST if the request method is POST
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-            if (\stripos($contentType, 'application/x-www-form-urlencoded') !== false || \stripos($contentType, 'multipart/form-data') !== false) {
+            if (\stripos($contentType, 'multipart/form-data') !== false) {
+                // Handle multipart/form-data
+                $this->parseMultipartData($request);
+            } elseif (\stripos($contentType, 'application/x-www-form-urlencoded') !== false) {
                 \parse_str($request->getBody()->getContents(), $_POST);
             } elseif (\stripos($contentType, 'application/json') !== false) {
                 $_POST = \json_decode($request->getBody()->getContents(), true) ?? [];
@@ -114,6 +117,48 @@ class SwowServer {
 
         // Merge $_GET and $_POST into $_REQUEST
         $_REQUEST = array_merge($_GET, $_POST);
+    }
+
+    protected function parseMultipartData(Request $request) {
+        $_FILES = [];
+        $body = $request->getBody()->getContents();
+        $boundary = \substr($body, 0, \strpos($body, "\r\n"));
+
+        // Split the body into different parts
+        $parts = \array_slice(\explode($boundary, $body), 1);
+        foreach ($parts as $part) {
+            if ($part == "--\r\n" || empty($part)) {
+                continue;
+            }
+
+            // Split headers and body of the part
+            list($rawHeaders, $fileContent) = \explode("\r\n\r\n", $part, 2);
+            $rawHeaders = \explode("\r\n", $rawHeaders);
+
+            $headers = [];
+            foreach ($rawHeaders as $header) {
+                list($name, $value) = explode(':', $header);
+                $headers[strtolower(trim($name))] = trim($value);
+            }
+
+            if (isset($headers['content-disposition'])) {
+                // Get the file information
+                if (\preg_match('/name="(?<name>[^"]+)"; filename="(?<filename>[^"]+)"/', $headers['content-disposition'], $matches)) {
+                    $name = $matches['name'];
+                    $filename = $matches['filename'];
+                    $tmpFile = tempnam(sys_get_temp_dir(), 'swow_upload_');
+                    \file_put_contents($tmpFile, \rtrim($fileContent, "\r\n"));
+
+                    $_FILES[$name] = [
+                        'name' => $filename,
+                        'type' => $headers['content-type'] ?? 'application/octet-stream',
+                        'tmp_name' => $tmpFile,
+                        'error' => UPLOAD_ERR_OK,
+                        'size' => filesize($tmpFile)
+                    ];
+                }
+            }
+        }
     }
 
 
