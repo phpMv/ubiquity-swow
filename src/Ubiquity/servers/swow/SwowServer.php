@@ -31,6 +31,10 @@ class SwowServer {
 
     private $httpInstance;
 
+    private $beforeRequest;
+
+    private $afterRequest;
+
     public function __construct() {
         $this->server = new Server();
     }
@@ -217,8 +221,12 @@ class SwowServer {
     }
 
     public function handle(Request $request, Response $response) {
+        if($this->beforeRequest) {
+            $beforeRequest = $this->beforeRequest;
+            $response = $beforeRequest($request,$response);
+        }
         $this->httpInstance = new SwowHttp($response, $request);
-        \Ubiquity\controllers\Startup::setHttpInstance( $this->httpInstance);
+        \Ubiquity\controllers\Startup::setHttpInstance($this->httpInstance);
         $response->setHeader('Date', \gmdate('D, d M Y H:i:s') . ' GMT');
         $_GET['c'] = '';
         $this->populateServerArray($request);
@@ -249,6 +257,24 @@ class SwowServer {
         \ob_start();
         \Ubiquity\controllers\StartupAsync::forward($_GET['c']);
         $response->getBody()->write(\ob_get_clean());
+        if ($this->afterRequest) {
+            $afterRequest = $this->afterRequest;
+            $response = $afterRequest($response);
+        }
         return $response;
+    }
+
+    /**
+     * @param mixed $beforeRequest
+     */
+    public function setBeforeRequest($beforeRequest): void {
+        $this->beforeRequest = $beforeRequest;
+    }
+
+    /**
+     * @param mixed $afterRequest
+     */
+    public function setAfterRequest($afterRequest): void {
+        $this->afterRequest = $afterRequest;
     }
 }
