@@ -227,6 +227,9 @@ class SwowServer {
 
         if ($uriInfos['isAction']) {
             $_GET['c'] = $uri;
+            if (!$response->hasHeader('Content-Type')) {
+                $response->setHeader('Content-Type', 'text/html; charset=utf-8');
+            }
         } else {
             if ($uriInfos['file']) {
                 $file = $this->basedir . '/' . $uri;
