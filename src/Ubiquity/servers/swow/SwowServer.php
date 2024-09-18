@@ -117,6 +117,17 @@ class SwowServer {
 
         // Merge $_GET and $_POST into $_REQUEST
         $_REQUEST = array_merge($_GET, $_POST);
+
+        // Handle $_COOKIE
+        $_COOKIE = [];
+        if ($request->hasHeader('cookie')) {
+            $cookieHeader = $request->getHeader('cookie')[0];
+            $cookies = \explode('; ', $cookieHeader);
+            foreach ($cookies as $cookie) {
+                list($name, $value) = \explode('=', $cookie, 2);
+                $_COOKIE[$name] = \urldecode($value);
+            }
+        }
     }
 
     protected function parseMultipartData(Request $request) {
